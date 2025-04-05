@@ -14,9 +14,9 @@ const Footer = () => {
       />
       
       <div className="container mx-auto px-4 py-12 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
           {/* Logo and mission */}
-          <div className="col-span-1 md:col-span-1">
+          <div className="col-span-1">
             <div className="flex items-center space-x-2 mb-4">
               <Shield className="h-6 w-6 text-cyber-blue" />
               <span className="text-xl font-bold tracking-tight">
@@ -49,35 +49,6 @@ const Footer = () => {
               <li><a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Knowledge Base</a></li>
               <li><a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Community</a></li>
             </ul>
-          </div>
-          
-          {/* Connect */}
-          <div className="col-span-1">
-            <h3 className="text-sm font-semibold mb-4 text-white">Connect</h3>
-            <div className="flex space-x-4 mb-6">
-              <a href="#" className="text-gray-400 hover:text-cyber-blue transition-colors">
-                <Github className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-cyber-blue transition-colors">
-                <Twitter className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-cyber-blue transition-colors">
-                <Linkedin className="h-5 w-5" />
-              </a>
-            </div>
-            <div className="bg-cyber-dark p-4 rounded-lg border border-gray-800">
-              <p className="text-sm text-gray-400 mb-2">Stay updated with our newsletter</p>
-              <div className="flex">
-                <input 
-                  type="email" 
-                  placeholder="Enter your email" 
-                  className="bg-cyber-darker text-sm p-2 rounded-l border border-gray-700 focus:outline-none focus:border-cyber-blue flex-grow"
-                />
-                <button className="bg-cyber-blue hover:bg-cyber-blue/90 text-white text-sm px-3 py-2 rounded-r transition-colors">
-                  Subscribe
-                </button>
-              </div>
-            </div>
           </div>
         </div>
         

@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Shield, Lock, Menu, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Shield, Menu, X } from 'lucide-react';
 
 const NavBar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -38,13 +38,12 @@ const NavBar = () => {
           
           {/* Auth Buttons - Desktop */}
           <div className="hidden md:flex items-center space-x-4">
-            <button className="cyber-btn">
+            <Link to="/signin" className="cyber-btn">
               Sign In
-            </button>
-            <button className="cyber-btn-primary">
-              <Lock className="mr-2 h-4 w-4" />
+            </Link>
+            <Link to="/signup" className="cyber-btn-primary">
               Get Started
-            </button>
+            </Link>
           </div>
           
           {/* Mobile Menu Button */}
@@ -91,18 +90,20 @@ const NavBar = () => {
           </div>
           <div className="pt-4 pb-3 border-t border-gray-700">
             <div className="flex items-center justify-center space-x-4 px-5">
-              <button 
+              <Link 
+                to="/signin" 
                 className="cyber-btn w-full"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Sign In
-              </button>
-              <button 
+              </Link>
+              <Link 
+                to="/signup" 
                 className="cyber-btn-primary w-full"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Get Started
-              </button>
+              </Link>
             </div>
           </div>
         </div>

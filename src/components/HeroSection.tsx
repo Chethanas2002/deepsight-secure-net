@@ -1,6 +1,7 @@
 
 import { useEffect, useState, useRef } from 'react';
-import { Shield, ArrowRight } from 'lucide-react';
+import { Shield } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const TypingEffect = ({ text }: { text: string }) => {
   const [displayText, setDisplayText] = useState('');
@@ -98,13 +99,12 @@ const HeroSection = () => {
             </div>
             
             <div className="flex flex-col sm:flex-row justify-center gap-4 mt-10">
-              <button className="cyber-btn text-base">
+              <Link to="/signin" className="cyber-btn text-base">
                 Sign In
-              </button>
-              <button className="cyber-btn-primary text-base">
+              </Link>
+              <Link to="/signup" className="cyber-btn-primary text-base">
                 Get Started
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </button>
+              </Link>
             </div>
           </div>
 

@@ -1,6 +1,6 @@
 
 import { useEffect, useState, useRef } from 'react';
-import { Database, BrainCircuit, Bell, FileText, ArrowRightCircle } from 'lucide-react';
+import { Database, BrainCircuit, Bell, FileText } from 'lucide-react';
 
 interface StepProps {
   icon: React.ReactNode;
@@ -140,14 +140,6 @@ const HowItWorksSection = () => {
               )}
             </div>
           ))}
-        </div>
-        
-        {/* Call to action */}
-        <div className={`text-center mt-10 transition-all duration-1000 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`} style={{ transitionDelay: '800ms' }}>
-          <button className="cyber-btn-primary">
-            Start Protecting Your Systems
-            <ArrowRightCircle className="ml-2 h-4 w-4" />
-          </button>
         </div>
       </div>
     </section>
