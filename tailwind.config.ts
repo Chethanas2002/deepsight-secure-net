@@ -74,6 +74,9 @@ export default {
 					'purple': '#312E81',
 					'teal': '#0D9488',
 					'highlight': '#60A5FA',
+					'green': '#10B981', // Adding neon green
+					'red': '#EF4444',   // Adding red for alerts
+					'yellow': '#F59E0B' // Adding yellow for warnings
 				}
 			},
 			borderRadius: {

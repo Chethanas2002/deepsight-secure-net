@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, ArrowRight, Shield, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useToast } from '@/hooks/use-toast';
 
 const SignUpSchema = z.object({
   fullName: z.string().min(2, { message: 'Full name must be at least 2 characters' }),
@@ -38,6 +39,8 @@ type FormValues = z.infer<typeof SignUpSchema>;
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(SignUpSchema),
@@ -51,7 +54,18 @@ const SignUp = () => {
 
   const onSubmit = (values: FormValues) => {
     console.log('Form submitted:', values);
-    // Handle signup logic here
+    // Handle signup logic here - in a real app this would call an API
+    
+    toast({
+      title: "Registration Successful",
+      description: "Your account has been created. You can now sign in.",
+      variant: "default",
+    });
+    
+    // Redirect to sign in page after successful registration
+    setTimeout(() => {
+      navigate('/signin');
+    }, 1500);
   };
 
   // Password strength indicators

@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useToast } from '@/hooks/use-toast';
 
 const SignInSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
@@ -19,6 +20,8 @@ type FormValues = z.infer<typeof SignInSchema>;
 
 const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(SignInSchema),
@@ -31,7 +34,18 @@ const SignIn = () => {
 
   const onSubmit = (values: FormValues) => {
     console.log('Form submitted:', values);
-    // Handle signin logic here
+    // In a real app, this would validate against an API
+    // For now, we'll just simulate successful login
+    toast({
+      title: "Success",
+      description: "You've been successfully signed in.",
+      variant: "default",
+    });
+    
+    // Redirect to dashboard after successful login
+    setTimeout(() => {
+      navigate('/dashboard');
+    }, 1000);
   };
 
   return (
