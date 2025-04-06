@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   ChevronLeft, ChevronRight, Bell, Settings, LogOut, User, Home, Monitor, 
   Brain, AlertTriangle, FileText, Menu, Search, Filter, BarChart, 
@@ -9,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { toast } from '@/components/ui/use-toast';
 import { 
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
 } from '@/components/ui/table';
@@ -111,6 +113,7 @@ const alerts = [
 
 // Dashboard component
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [selectedLog, setSelectedLog] = useState<any>(null);
   const [showNotifications, setShowNotifications] = useState(false);
   const [activeSection, setActiveSection] = useState('dashboard');
@@ -123,6 +126,15 @@ const Dashboard = () => {
   
   // Toggle notifications panel
   const toggleNotifications = () => setShowNotifications(!showNotifications);
+
+  // Handle logout
+  const handleLogout = () => {
+    toast({
+      title: "Logged out successfully",
+      description: "You have been logged out of your account",
+    });
+    navigate('/');
+  };
 
   return (
     <SidebarProvider>
@@ -189,7 +201,7 @@ const Dashboard = () => {
             </SidebarMenu>
           </SidebarContent>
           <SidebarFooter>
-            <Button variant="destructive" size="sm" className="w-full" onClick={() => console.log('logout')}>
+            <Button variant="destructive" size="sm" className="w-full" onClick={handleLogout}>
               <LogOut size={18} />
               <span>Logout</span>
             </Button>
@@ -221,7 +233,7 @@ const Dashboard = () => {
                 
                 {/* Notifications panel */}
                 {showNotifications && (
-                  <div className="absolute right-0 mt-2 w-96 bg-[#111827] border border-blue-900/20 rounded-lg shadow-xl z-20 overflow-hidden">
+                  <div className="absolute right-0 mt-2 w-96 bg-[#111827] border border-blue-900/20 rounded-lg shadow-xl z-20 overflow-hidden neo-blur">
                     <div className="p-4 border-b border-blue-900/20 flex justify-between items-center">
                       <h3 className="font-bold">Notifications</h3>
                       <Button variant="ghost" size="sm" className="text-xs">Mark all as read</Button>
@@ -275,161 +287,164 @@ const Dashboard = () => {
           
           {/* Dashboard Content */}
           <main className="p-6">
-            {/* Live Threat Monitoring Panel */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-              <div className="lg:col-span-2 bg-[#111827] border border-blue-900/20 rounded-lg p-6 shadow-lg">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-bold">Live Threat Monitoring</h2>
-                  <div className="flex space-x-2">
-                    <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/30">Low</Badge>
-                    <Badge variant="outline" className="bg-yellow-500/10 text-yellow-400 border-yellow-500/30">Medium</Badge>
-                    <Badge variant="outline" className="bg-red-500/10 text-red-400 border-red-500/30">High</Badge>
+            {activeSection === 'dashboard' && (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <div className="lg:col-span-2 bg-[#111827]/90 border border-blue-900/20 rounded-lg p-6 shadow-lg backdrop-blur-sm">
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl font-bold">Live Threat Monitoring</h2>
+                    <div className="flex space-x-2">
+                      <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/30">Low</Badge>
+                      <Badge variant="outline" className="bg-yellow-500/10 text-yellow-400 border-yellow-500/30">Medium</Badge>
+                      <Badge variant="outline" className="bg-red-500/10 text-red-400 border-red-500/30">High</Badge>
+                    </div>
+                  </div>
+                  <div className="h-64 w-full bg-[#1a2235] rounded-lg flex items-center justify-center border border-blue-900/20">
+                    <div className="text-center px-4">
+                      <BarChart className="h-10 w-10 text-cyber-blue mx-auto mb-3 opacity-80" />
+                      <p className="text-gray-400">Chart visualization would go here</p>
+                      <p className="text-xs text-gray-500 mt-2">Showing threat levels for the past 7 days</p>
+                    </div>
+                  </div>
+                  <div className="mt-4 flex justify-between text-xs text-gray-500">
+                    <span>Mar 1</span>
+                    <span>Mar 2</span>
+                    <span>Mar 3</span>
+                    <span>Mar 4</span>
+                    <span>Mar 5</span>
+                    <span>Mar 6</span>
+                    <span>Mar 7</span>
                   </div>
                 </div>
-                <div className="h-64 w-full bg-[#1a2235] rounded-lg flex items-center justify-center border border-blue-900/20">
-                  <div className="text-center px-4">
-                    <BarChart className="h-10 w-10 text-cyber-blue mx-auto mb-3 opacity-80" />
-                    <p className="text-gray-400">Chart visualization would go here</p>
-                    <p className="text-xs text-gray-500 mt-2">Showing threat levels for the past 7 days</p>
+                
+                <div className="bg-[#111827]/90 backdrop-blur-sm border border-blue-900/20 rounded-lg p-6 shadow-lg">
+                  <h2 className="text-xl font-bold mb-6">Threat Summary</h2>
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-400">Active Honeypots</p>
+                        <p className="text-2xl font-bold text-cyber-blue">12</p>
+                      </div>
+                      <div className="h-10 w-10 rounded-full bg-blue-900/20 flex items-center justify-center text-cyber-blue">
+                        <Cpu />
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-400">Threats Detected (24h)</p>
+                        <p className="text-2xl font-bold text-red-400">7</p>
+                      </div>
+                      <div className="h-10 w-10 rounded-full bg-red-900/20 flex items-center justify-center text-red-400">
+                        <AlertCircle />
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-400">AI Model Accuracy</p>
+                        <p className="text-2xl font-bold text-green-400">97.3%</p>
+                      </div>
+                      <div className="h-10 w-10 rounded-full bg-green-900/20 flex items-center justify-center text-green-400">
+                        <Brain />
+                      </div>
+                    </div>
+                    
+                    <Button className="w-full bg-cyber-blue/10 text-cyber-blue hover:bg-cyber-blue/20 border border-cyber-blue/20">
+                      View Detailed Report
+                    </Button>
                   </div>
-                </div>
-                <div className="mt-4 flex justify-between text-xs text-gray-500">
-                  <span>Mar 1</span>
-                  <span>Mar 2</span>
-                  <span>Mar 3</span>
-                  <span>Mar 4</span>
-                  <span>Mar 5</span>
-                  <span>Mar 6</span>
-                  <span>Mar 7</span>
                 </div>
               </div>
-              
-              <div className="bg-[#111827] border border-blue-900/20 rounded-lg p-6 shadow-lg">
-                <h2 className="text-xl font-bold mb-6">Threat Summary</h2>
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-400">Active Honeypots</p>
-                      <p className="text-2xl font-bold text-cyber-blue">12</p>
-                    </div>
-                    <div className="h-10 w-10 rounded-full bg-blue-900/20 flex items-center justify-center text-cyber-blue">
-                      <Cpu />
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-400">Threats Detected (24h)</p>
-                      <p className="text-2xl font-bold text-red-400">7</p>
-                    </div>
-                    <div className="h-10 w-10 rounded-full bg-red-900/20 flex items-center justify-center text-red-400">
-                      <AlertCircle />
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-400">AI Model Accuracy</p>
-                      <p className="text-2xl font-bold text-green-400">97.3%</p>
-                    </div>
-                    <div className="h-10 w-10 rounded-full bg-green-900/20 flex items-center justify-center text-green-400">
-                      <Brain />
-                    </div>
-                  </div>
-                  
-                  <Button className="w-full bg-cyber-blue/10 text-cyber-blue hover:bg-cyber-blue/20 border border-cyber-blue/20">
-                    View Detailed Report
-                  </Button>
-                </div>
-              </div>
-            </div>
+            )}
             
             {/* Honeypot Logs Section */}
-            <div className="bg-[#111827] border border-blue-900/20 rounded-lg shadow-lg overflow-hidden mb-6">
-              <div className="p-6">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-bold">Honeypot Logs</h2>
-                  <div className="flex space-x-3">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
-                      <Input 
-                        placeholder="Search logs..." 
-                        className="pl-10 bg-[#1a2235] border-blue-900/20 focus:border-cyber-blue h-9 text-sm"
-                      />
+            {activeSection === 'honeypotLogs' && (
+              <div className="bg-[#111827]/90 backdrop-blur-sm border border-blue-900/20 rounded-lg shadow-lg overflow-hidden mb-6">
+                <div className="p-6">
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl font-bold">Honeypot Logs</h2>
+                    <div className="flex space-x-3">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
+                        <Input 
+                          placeholder="Search logs..." 
+                          className="pl-10 bg-[#1a2235] border-blue-900/20 focus:border-cyber-blue h-9 text-sm"
+                        />
+                      </div>
+                      <Button variant="outline" size="sm" className="border-blue-900/20 hover:bg-blue-900/20">
+                        <Filter size={16} className="mr-2" /> Filter
+                      </Button>
                     </div>
-                    <Button variant="outline" size="sm" className="border-blue-900/20 hover:bg-blue-900/20">
-                      <Filter size={16} className="mr-2" /> Filter
-                    </Button>
                   </div>
-                </div>
-                
-                <div className="rounded-lg overflow-hidden border border-blue-900/20">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="hover:bg-blue-900/10 border-blue-900/20">
-                        <TableHead className="text-gray-400 font-medium">Process Type</TableHead>
-                        <TableHead className="text-gray-400 font-medium">Time of Access</TableHead>
-                        <TableHead className="text-gray-400 font-medium">Status</TableHead>
-                        <TableHead className="text-gray-400 font-medium">Behavior Summary</TableHead>
-                        <TableHead className="text-gray-400 font-medium w-20">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {honeypotLogs.map(log => (
-                        <TableRow 
-                          key={log.id} 
-                          className="hover:bg-blue-900/10 border-blue-900/20 cursor-pointer"
-                          onClick={() => openLogDetails(log)}
-                        >
-                          <TableCell className="font-mono">
-                            <div className="flex items-center">
-                              <span className="h-2 w-2 rounded-full bg-cyber-blue mr-2"></span>
-                              {log.processType}
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-gray-400 text-sm">{log.timestamp}</TableCell>
-                          <TableCell>
-                            {log.detected ? (
-                              <Badge className="bg-red-500/20 text-red-400 border-none">
-                                Ransomware
-                              </Badge>
-                            ) : (
-                              <Badge className="bg-green-500/20 text-green-400 border-none">
-                                Safe
-                              </Badge>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-gray-400 text-sm max-w-sm truncate">
-                            {log.behaviorSummary}
-                          </TableCell>
-                          <TableCell>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400">
-                              <MoreHorizontal size={16} />
-                            </Button>
-                          </TableCell>
+                  
+                  <div className="rounded-lg overflow-hidden border border-blue-900/20">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="hover:bg-blue-900/10 border-blue-900/20">
+                          <TableHead className="text-gray-400 font-medium">Process Type</TableHead>
+                          <TableHead className="text-gray-400 font-medium">Time of Access</TableHead>
+                          <TableHead className="text-gray-400 font-medium">Status</TableHead>
+                          <TableHead className="text-gray-400 font-medium">Behavior Summary</TableHead>
+                          <TableHead className="text-gray-400 font-medium w-20">Actions</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-                
-                <div className="flex justify-between items-center mt-4 text-sm text-gray-400">
-                  <span>Showing 5 of 127 logs</span>
-                  <div className="flex items-center space-x-2">
-                    <Button variant="outline" size="sm" className="h-8 border-blue-900/20">
-                      <ChevronLeft size={16} /> Previous
-                    </Button>
-                    <Button variant="outline" size="sm" className="h-8 border-blue-900/20">
-                      Next <ChevronRight size={16} />
-                    </Button>
+                      </TableHeader>
+                      <TableBody>
+                        {honeypotLogs.map(log => (
+                          <TableRow 
+                            key={log.id} 
+                            className="hover:bg-blue-900/10 border-blue-900/20 cursor-pointer"
+                            onClick={() => openLogDetails(log)}
+                          >
+                            <TableCell className="font-mono">
+                              <div className="flex items-center">
+                                <span className="h-2 w-2 rounded-full bg-cyber-blue mr-2"></span>
+                                {log.processType}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-gray-400 text-sm">{log.timestamp}</TableCell>
+                            <TableCell>
+                              {log.detected ? (
+                                <Badge className="bg-red-500/20 text-red-400 border-none">
+                                  Ransomware
+                                </Badge>
+                              ) : (
+                                <Badge className="bg-green-500/20 text-green-400 border-none">
+                                  Safe
+                                </Badge>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-gray-400 text-sm max-w-sm truncate">
+                              {log.behaviorSummary}
+                            </TableCell>
+                            <TableCell>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400">
+                                <MoreHorizontal size={16} />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  
+                  <div className="flex justify-between items-center mt-4 text-sm text-gray-400">
+                    <span>Showing 5 of 127 logs</span>
+                    <div className="flex items-center space-x-2">
+                      <Button variant="outline" size="sm" className="h-8 border-blue-900/20">
+                        <ChevronLeft size={16} /> Previous
+                      </Button>
+                      <Button variant="outline" size="sm" className="h-8 border-blue-900/20">
+                        Next <ChevronRight size={16} />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
             
-            {/* AI Model Predictions & Reports Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-              <div className="lg:col-span-2 bg-[#111827] border border-blue-900/20 rounded-lg p-6 shadow-lg">
+            {/* AI Model Predictions Section */}
+            {activeSection === 'aiPredictions' && (
+              <div className="bg-[#111827]/90 backdrop-blur-sm border border-blue-900/20 rounded-lg p-6 shadow-lg">
                 <h2 className="text-xl font-bold mb-6">AI Model Predictions</h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -478,8 +493,11 @@ const Dashboard = () => {
                   </Button>
                 </div>
               </div>
-              
-              <div className="bg-[#111827] border border-blue-900/20 rounded-lg p-6 shadow-lg">
+            )}
+            
+            {/* Reports Section */}
+            {activeSection === 'reports' && (
+              <div className="bg-[#111827]/90 backdrop-blur-sm border border-blue-900/20 rounded-lg p-6 shadow-lg">
                 <h2 className="text-xl font-bold mb-6">Report Generator</h2>
                 
                 <div className="space-y-4">
@@ -545,14 +563,57 @@ const Dashboard = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            )}
+            
+            {/* Alerts Section */}
+            {activeSection === 'alerts' && (
+              <div className="bg-[#111827]/90 backdrop-blur-sm border border-blue-900/20 rounded-lg p-6 shadow-lg">
+                <h2 className="text-xl font-bold mb-6">Alerts</h2>
+                
+                <div className="space-y-4">
+                  {alerts.map(alert => (
+                    <div 
+                      key={alert.id}
+                      className={`p-4 rounded-lg border ${
+                        alert.severity === 'high' ? 'bg-red-500/10 border-red-500/30' :
+                        alert.severity === 'medium' ? 'bg-yellow-500/10 border-yellow-500/30' :
+                        'bg-green-500/10 border-green-500/30'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="font-bold">{alert.title}</h3>
+                          <p className="text-sm text-gray-400 mt-1">{alert.description}</p>
+                          <p className="text-xs text-gray-500 mt-2">{alert.timestamp}</p>
+                        </div>
+                        <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
+                          alert.severity === 'high' ? 'bg-red-500/20 text-red-400' :
+                          alert.severity === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                          'bg-green-500/20 text-green-400'
+                        }`}>
+                          <AlertTriangle size={16} />
+                        </div>
+                      </div>
+                      <div className="flex space-x-2 mt-3">
+                        <Button variant="outline" size="sm" className="h-8 text-xs border-blue-900/20">
+                          Dismiss
+                        </Button>
+                        <Button variant="outline" size="sm" className="h-8 text-xs border-blue-900/20 bg-blue-900/5">
+                          View Details
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </main>
         </div>
       
         {/* Log details modal */}
         {selectedLog && (
           <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-            <div className="bg-[#111827] border border-blue-900/30 rounded-lg w-full max-w-2xl shadow-xl">
+            <div className="bg-[#111827]/95 backdrop-blur-sm border border-blue-900/30 rounded-lg w-full max-w-2xl shadow-xl">
               <div className="flex justify-between items-center p-6 border-b border-blue-900/20">
                 <h2 className="text-xl font-bold">Log Details</h2>
                 <Button variant="ghost" size="icon" onClick={closeLogDetails}>
