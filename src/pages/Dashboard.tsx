@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ChevronLeft, ChevronRight, Bell, Settings, LogOut, User, Home, Monitor, 
@@ -45,6 +45,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import SettingsComponent from "@/components/Settings";
 
 // Dummy data for the dashboard
 const threatData = [
@@ -57,7 +58,8 @@ const threatData = [
   { date: '2023-03-07', count: 29 }
 ];
 
-const honeypotLogs = [
+// Initial honeypot logs data
+const initialHoneypotLogs = [
   { 
     id: 1, 
     processType: 'cmd.exe', 
@@ -136,6 +138,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [selectedLog, setSelectedLog] = useState<any>(null);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [activeSection, setActiveSection] = useState('dashboard');
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -147,6 +150,7 @@ const Dashboard = () => {
   const [emailDialogOpen, setEmailDialogOpen] = useState<boolean>(false);
   const [emailAddress, setEmailAddress] = useState<string>('');
   const [isGeneratingReport, setIsGeneratingReport] = useState<boolean>(false);
+  const [honeypotLogs, setHoneypotLogs] = useState(initialHoneypotLogs);
   
   // Pagination settings
   const itemsPerPage = 3;
@@ -183,16 +187,77 @@ const Dashboard = () => {
     }
   };
 
+  // Parse CSV file
+  const parseCSV = (text: string) => {
+    const rows = text.split('\n');
+    const headers = rows[0].split(',');
+    
+    return rows.slice(1).filter(row => row.trim()).map((row, index) => {
+      const values = row.split(',');
+      const entry: any = { id: honeypotLogs.length + index + 1 };
+      
+      headers.forEach((header, i) => {
+        const value = values[i] ? values[i].trim() : '';
+        const headerKey = header.trim().toLowerCase();
+        
+        if (headerKey === 'processtype') {
+          entry.processType = value;
+        } else if (headerKey === 'timestamp') {
+          entry.timestamp = value;
+        } else if (headerKey === 'detected') {
+          entry.detected = value.toLowerCase() === 'true';
+        } else if (headerKey === 'severity') {
+          entry.severity = value.toLowerCase();
+        } else if (headerKey === 'behaviorsummary') {
+          entry.behaviorSummary = value;
+        }
+      });
+      
+      // Set defaults for any missing fields
+      if (!entry.processType) entry.processType = 'unknown';
+      if (!entry.timestamp) entry.timestamp = new Date().toISOString().replace('T', ' ').substr(0, 19);
+      if (entry.detected === undefined) entry.detected = false;
+      if (!entry.severity) entry.severity = 'low';
+      if (!entry.behaviorSummary) entry.behaviorSummary = 'No behavior summary available';
+      
+      return entry;
+    });
+  };
+
   // Handle File Upload
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // In a real app, this would parse the CSV file
-      // For now, we'll just show a toast notification
-      toast({
-        title: "File uploaded successfully",
-        description: `Uploaded ${file.name} (${Math.round(file.size / 1024)} KB)`,
-      });
+      const reader = new FileReader();
+      
+      reader.onload = (event) => {
+        const csvText = event.target?.result as string;
+        try {
+          const parsedData = parseCSV(csvText);
+          
+          if (parsedData.length > 0) {
+            setHoneypotLogs([...parsedData, ...honeypotLogs]);
+            toast({
+              title: "CSV data imported",
+              description: `Added ${parsedData.length} new logs from ${file.name}`,
+            });
+          } else {
+            toast({
+              title: "No valid data found",
+              description: "The CSV file did not contain any valid log entries.",
+              variant: "destructive",
+            });
+          }
+        } catch (error) {
+          toast({
+            title: "Error parsing CSV",
+            description: "There was an error processing the CSV file. Please check the format.",
+            variant: "destructive",
+          });
+        }
+      };
+      
+      reader.readAsText(file);
     }
   };
 
@@ -214,7 +279,7 @@ const Dashboard = () => {
     });
   };
 
-  // Handle report generation
+  // Generate and download report
   const generateReport = () => {
     if (!processType || !exportFormat) {
       toast({
@@ -227,12 +292,42 @@ const Dashboard = () => {
 
     setIsGeneratingReport(true);
 
-    // Simulate report generation
+    // Simulate report generation delay
     setTimeout(() => {
       setIsGeneratingReport(false);
+      
+      // Create the report content based on format
+      let content = '';
+      let filename = '';
+      let dataType = '';
+      
+      if (exportFormat === 'pdf') {
+        // In a real app, we would generate a PDF
+        // For this demo, we'll create a text file with PDF extension
+        content = generateReportContent(true);
+        filename = `ransomguard_report_${new Date().toISOString().split('T')[0]}.pdf`;
+        dataType = 'text/plain';
+      } else {
+        // CSV format
+        content = generateReportContent(false);
+        filename = `ransomguard_report_${new Date().toISOString().split('T')[0]}.csv`;
+        dataType = 'text/csv';
+      }
+      
+      // Create the download
+      const blob = new Blob([content], { type: dataType });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
       toast({
         title: "Report generated successfully",
-        description: `Your ${exportFormat.toUpperCase()} report for ${processType} is ready to download.`,
+        description: `Your ${exportFormat.toUpperCase()} report has been downloaded.`,
       });
       
       if (emailMe && emailAddress) {
@@ -242,6 +337,45 @@ const Dashboard = () => {
         });
       }
     }, 2000);
+  };
+
+  // Generate report content
+  const generateReportContent = (isPdf: boolean) => {
+    const filteredLogs = honeypotLogs.filter(log => 
+      (processType === 'all' || log.processType === processType)
+    );
+    
+    if (isPdf) {
+      // Simple text representation for demo purposes
+      let content = `RANSOMGUARD SECURITY REPORT\n`;
+      content += `Generated: ${new Date().toLocaleString()}\n`;
+      content += `Time Range: ${timeRange}\n`;
+      content += `Process Type: ${processType}\n\n`;
+      
+      content += `SUMMARY\n`;
+      content += `Total Logs: ${filteredLogs.length}\n`;
+      content += `Threats Detected: ${filteredLogs.filter(log => log.detected).length}\n\n`;
+      
+      content += `DETAILED LOGS\n`;
+      filteredLogs.forEach(log => {
+        content += `Process: ${log.processType}\n`;
+        content += `Timestamp: ${log.timestamp}\n`;
+        content += `Status: ${log.detected ? 'Ransomware' : 'Safe'}\n`;
+        content += `Severity: ${log.severity}\n`;
+        content += `Behavior: ${log.behaviorSummary}\n\n`;
+      });
+      
+      return content;
+    } else {
+      // CSV format
+      let content = `ProcessType,Timestamp,Status,Severity,BehaviorSummary\n`;
+      
+      filteredLogs.forEach(log => {
+        content += `${log.processType},${log.timestamp},${log.detected ? 'Ransomware' : 'Safe'},${log.severity},"${log.behaviorSummary}"\n`;
+      });
+      
+      return content;
+    }
   };
 
   // Handle email dialog submit
@@ -374,12 +508,11 @@ const Dashboard = () => {
                   <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
                 </Button>
                 
-                {/* Notifications panel */}
+                {/* Notifications panel - with removed buttons */}
                 {showNotifications && (
                   <div className="absolute right-0 mt-2 w-96 bg-[#111827] border border-blue-900/20 rounded-lg shadow-xl z-20 overflow-hidden neo-blur">
-                    <div className="p-4 border-b border-blue-900/20 flex justify-between items-center">
+                    <div className="p-4 border-b border-blue-900/20">
                       <h3 className="font-bold">Notifications</h3>
-                      <Button variant="ghost" size="sm" className="text-xs">Mark all as read</Button>
                     </div>
                     <div className="max-h-96 overflow-y-auto">
                       {alerts.map(alert => (
@@ -400,14 +533,16 @@ const Dashboard = () => {
                         </div>
                       ))}
                     </div>
-                    <div className="p-3 border-t border-blue-900/20 text-center">
-                      <Button variant="ghost" size="sm" className="text-xs text-cyber-blue">View all notifications</Button>
-                    </div>
                   </div>
                 )}
               </div>
               
-              <Button variant="ghost" size="icon" className="hover:bg-blue-900/20">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="hover:bg-blue-900/20"
+                onClick={() => setShowSettings(true)}
+              >
                 <Settings size={20} />
               </Button>
               
@@ -918,6 +1053,13 @@ const Dashboard = () => {
               <Button variant="outline" onClick={() => setEmailDialogOpen(false)}>Cancel</Button>
               <Button onClick={handleEmailSubmit}>Save</Button>
             </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
+        {/* Settings Dialog */}
+        <Dialog open={showSettings} onOpenChange={setShowSettings}>
+          <DialogContent className="bg-[#111827] border border-blue-900/30 text-white max-w-2xl">
+            <SettingsComponent onClose={() => setShowSettings(false)} />
           </DialogContent>
         </Dialog>
       </div>
