@@ -1,4 +1,5 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ChevronLeft, ChevronRight, Bell, Settings, LogOut, User, Home, Monitor, 
@@ -14,6 +15,7 @@ import { toast } from '@/components/ui/use-toast';
 import { 
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
 } from '@/components/ui/table';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   SidebarProvider,
   Sidebar,
@@ -25,6 +27,24 @@ import {
   SidebarMenuItem,
   SidebarTrigger
 } from "@/components/ui/sidebar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
 // Dummy data for the dashboard
 const threatData = [
@@ -117,6 +137,29 @@ const Dashboard = () => {
   const [selectedLog, setSelectedLog] = useState<any>(null);
   const [showNotifications, setShowNotifications] = useState(false);
   const [activeSection, setActiveSection] = useState('dashboard');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [timeRange, setTimeRange] = useState<string>('today');
+  const [processType, setProcessType] = useState<string>('all');
+  const [exportFormat, setExportFormat] = useState<string>('pdf');
+  const [emailMe, setEmailMe] = useState<boolean>(false);
+  const [autoSchedule, setAutoSchedule] = useState<boolean>(false);
+  const [emailDialogOpen, setEmailDialogOpen] = useState<boolean>(false);
+  const [emailAddress, setEmailAddress] = useState<string>('');
+  const [isGeneratingReport, setIsGeneratingReport] = useState<boolean>(false);
+  
+  // Pagination settings
+  const itemsPerPage = 3;
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  
+  // Filter logs based on search
+  const filteredLogs = honeypotLogs.filter(log => 
+    log.processType.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  
+  const currentLogs = filteredLogs.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredLogs.length / itemsPerPage);
   
   // Open log details modal
   const openLogDetails = (log: any) => setSelectedLog(log);
@@ -127,6 +170,32 @@ const Dashboard = () => {
   // Toggle notifications panel
   const toggleNotifications = () => setShowNotifications(!showNotifications);
 
+  // Handle pagination
+  const nextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+  
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  // Handle File Upload
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // In a real app, this would parse the CSV file
+      // For now, we'll just show a toast notification
+      toast({
+        title: "File uploaded successfully",
+        description: `Uploaded ${file.name} (${Math.round(file.size / 1024)} KB)`,
+      });
+    }
+  };
+
   // Handle logout
   const handleLogout = () => {
     toast({
@@ -134,6 +203,80 @@ const Dashboard = () => {
       description: "You have been logged out of your account",
     });
     navigate('/');
+  };
+
+  // Set time range for report
+  const setReportTimeRange = (range: string) => {
+    setTimeRange(range);
+    toast({
+      title: `Time range set to: ${range}`,
+      description: "Report will be generated for this time period.",
+    });
+  };
+
+  // Handle report generation
+  const generateReport = () => {
+    if (!processType || !exportFormat) {
+      toast({
+        title: "Missing information",
+        description: "Please select a process type and export format.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingReport(true);
+
+    // Simulate report generation
+    setTimeout(() => {
+      setIsGeneratingReport(false);
+      toast({
+        title: "Report generated successfully",
+        description: `Your ${exportFormat.toUpperCase()} report for ${processType} is ready to download.`,
+      });
+      
+      if (emailMe && emailAddress) {
+        toast({
+          title: "Report email sent",
+          description: `Your report has been emailed to ${emailAddress}.`,
+        });
+      }
+    }, 2000);
+  };
+
+  // Handle email dialog submit
+  const handleEmailSubmit = () => {
+    if (!emailAddress.includes('@')) {
+      toast({
+        title: "Invalid email address",
+        description: "Please enter a valid email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    toast({
+      title: "Email address saved",
+      description: "Your reports will be emailed to this address.",
+    });
+    
+    setEmailDialogOpen(false);
+  };
+
+  // Handle schedule toggle
+  const handleScheduleToggle = (checked: boolean) => {
+    setAutoSchedule(checked);
+    if (checked) {
+      toast({
+        title: "Weekly schedule enabled",
+        description: "Reports will be generated automatically every Monday.",
+      });
+    } else {
+      toast({
+        title: "Weekly schedule disabled",
+        description: "Automatic report generation has been disabled.",
+      });
+    }
   };
 
   return (
@@ -251,10 +394,6 @@ const Dashboard = () => {
                               <p className="text-gray-400 text-xs mt-1">{alert.description}</p>
                               <div className="flex justify-between items-center mt-2">
                                 <span className="text-xs text-gray-500">{alert.timestamp}</span>
-                                <div className="flex space-x-2">
-                                  <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">Dismiss</Button>
-                                  <Button variant="outline" size="sm" className="h-6 px-2 text-xs border-cyber-blue text-cyber-blue hover:bg-cyber-blue/10">View</Button>
-                                </div>
                               </div>
                             </div>
                           </div>
@@ -348,10 +487,6 @@ const Dashboard = () => {
                         <Brain />
                       </div>
                     </div>
-                    
-                    <Button className="w-full bg-cyber-blue/10 text-cyber-blue hover:bg-cyber-blue/20 border border-cyber-blue/20">
-                      View Detailed Report
-                    </Button>
                   </div>
                 </div>
               </div>
@@ -367,13 +502,24 @@ const Dashboard = () => {
                       <div className="relative">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
                         <Input 
-                          placeholder="Search logs..." 
+                          placeholder="Search by process type..." 
                           className="pl-10 bg-[#1a2235] border-blue-900/20 focus:border-cyber-blue h-9 text-sm"
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
                         />
                       </div>
-                      <Button variant="outline" size="sm" className="border-blue-900/20 hover:bg-blue-900/20">
-                        <Filter size={16} className="mr-2" /> Filter
-                      </Button>
+                      <div className="relative">
+                        <input
+                          type="file"
+                          id="csvUpload"
+                          accept=".csv"
+                          onChange={handleFileUpload}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        />
+                        <Button variant="outline" size="sm" className="border-blue-900/20 hover:bg-blue-900/20">
+                          <Upload size={16} className="mr-2" /> Upload CSV
+                        </Button>
+                      </div>
                     </div>
                   </div>
                   
@@ -389,7 +535,7 @@ const Dashboard = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {honeypotLogs.map(log => (
+                        {currentLogs.map(log => (
                           <TableRow 
                             key={log.id} 
                             className="hover:bg-blue-900/10 border-blue-900/20 cursor-pointer"
@@ -428,12 +574,24 @@ const Dashboard = () => {
                   </div>
                   
                   <div className="flex justify-between items-center mt-4 text-sm text-gray-400">
-                    <span>Showing 5 of 127 logs</span>
+                    <span>Showing {Math.min(currentLogs.length, itemsPerPage)} of {filteredLogs.length} logs</span>
                     <div className="flex items-center space-x-2">
-                      <Button variant="outline" size="sm" className="h-8 border-blue-900/20">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="h-8 border-blue-900/20"
+                        onClick={prevPage}
+                        disabled={currentPage === 1}
+                      >
                         <ChevronLeft size={16} /> Previous
                       </Button>
-                      <Button variant="outline" size="sm" className="h-8 border-blue-900/20">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="h-8 border-blue-900/20"
+                        onClick={nextPage}
+                        disabled={currentPage === totalPages}
+                      >
                         Next <ChevronRight size={16} />
                       </Button>
                     </div>
@@ -485,13 +643,6 @@ const Dashboard = () => {
                     <p className="text-xs text-gray-500 mt-2">Trending at 97.3% accuracy</p>
                   </div>
                 </div>
-                
-                <div className="flex justify-center">
-                  <Button className="bg-cyber-blue hover:bg-cyber-blue/90 flex items-center">
-                    <Upload size={16} className="mr-2" />
-                    Upload File for Analysis
-                  </Button>
-                </div>
               </div>
             )}
             
@@ -504,10 +655,20 @@ const Dashboard = () => {
                   <div>
                     <label className="text-sm text-gray-400 block mb-2">Time Range</label>
                     <div className="grid grid-cols-2 gap-2">
-                      <Button variant="outline" size="sm" className="border-blue-900/20 bg-blue-900/5">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className={`border-blue-900/20 ${timeRange === 'today' ? 'bg-blue-900/30 border-cyber-blue' : 'bg-blue-900/5'}`}
+                        onClick={() => setReportTimeRange('today')}
+                      >
                         <Clock size={16} className="mr-2" /> Today
                       </Button>
-                      <Button variant="outline" size="sm" className="border-blue-900/20">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className={`border-blue-900/20 ${timeRange === 'week' ? 'bg-blue-900/30 border-cyber-blue' : ''}`}
+                        onClick={() => setReportTimeRange('week')}
+                      >
                         <Calendar size={16} className="mr-2" /> This Week
                       </Button>
                     </div>
@@ -516,7 +677,11 @@ const Dashboard = () => {
                   <div>
                     <label className="text-sm text-gray-400 block mb-2">Process Type</label>
                     <div className="relative">
-                      <select className="w-full bg-[#1a2235] border border-blue-900/20 rounded-md h-10 px-3 text-sm appearance-none focus:border-cyber-blue">
+                      <select 
+                        className="w-full bg-[#1a2235] border border-blue-900/20 rounded-md h-10 px-3 text-sm appearance-none focus:border-cyber-blue"
+                        value={processType}
+                        onChange={(e) => setProcessType(e.target.value)}
+                      >
                         <option value="all">All Processes</option>
                         <option value="cmd.exe">cmd.exe</option>
                         <option value="powershell.exe">powershell.exe</option>
@@ -531,35 +696,92 @@ const Dashboard = () => {
                   <div>
                     <label className="text-sm text-gray-400 block mb-2">Export Format</label>
                     <div className="grid grid-cols-2 gap-2">
-                      <Button variant="outline" size="sm" className="border-blue-900/20 bg-blue-900/5">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className={`border-blue-900/20 ${exportFormat === 'pdf' ? 'bg-blue-900/30 border-cyber-blue' : 'bg-blue-900/5'}`}
+                        onClick={() => setExportFormat('pdf')}
+                      >
                         <FileText size={16} className="mr-2" /> PDF
                       </Button>
-                      <Button variant="outline" size="sm" className="border-blue-900/20">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className={`border-blue-900/20 ${exportFormat === 'csv' ? 'bg-blue-900/30 border-cyber-blue' : ''}`}
+                        onClick={() => setExportFormat('csv')}
+                      >
                         <FileType size={16} className="mr-2" /> CSV
                       </Button>
                     </div>
                   </div>
                   
                   <div className="pt-2">
-                    <Button className="w-full bg-cyber-blue hover:bg-cyber-blue/90">
-                      <Download size={16} className="mr-2" /> Generate Report
+                    <Button 
+                      className="w-full bg-cyber-blue hover:bg-cyber-blue/90 relative"
+                      onClick={generateReport}
+                      disabled={isGeneratingReport}
+                    >
+                      {isGeneratingReport ? (
+                        <>
+                          <span className="animate-pulse">Generating Report...</span>
+                          <span className="absolute inset-0 flex items-center justify-center">
+                            <span className="h-4 w-4 rounded-full border-2 border-white border-opacity-20 border-t-white animate-spin"></span>
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <Download size={16} className="mr-2" /> Generate Report
+                        </>
+                      )}
                     </Button>
                   </div>
                   
                   <div className="flex items-center justify-between text-sm pt-2">
                     <div className="flex items-center">
-                      <input type="checkbox" id="email-me" className="h-4 w-4 rounded border-gray-600 bg-[#1a2235] text-cyber-blue focus:ring-cyber-blue" />
+                      <Checkbox 
+                        id="email-me" 
+                        checked={emailMe}
+                        onCheckedChange={(checked) => {
+                          setEmailMe(!!checked);
+                          if (checked) {
+                            setEmailDialogOpen(true);
+                          }
+                        }}
+                        className="h-4 w-4 rounded border-gray-600 bg-[#1a2235] text-cyber-blue focus:ring-cyber-blue"
+                      />
                       <label htmlFor="email-me" className="ml-2 text-gray-400">Email me the report</label>
                     </div>
-                    <Mail size={16} className="text-gray-500" />
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="text-gray-500 hover:text-cyber-blue transition-colors"
+                      onClick={() => setEmailDialogOpen(true)}
+                    >
+                      <Mail size={16} />
+                    </Button>
                   </div>
                   
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center">
-                      <input type="checkbox" id="auto-schedule" className="h-4 w-4 rounded border-gray-600 bg-[#1a2235] text-cyber-blue focus:ring-cyber-blue" />
+                      <Checkbox 
+                        id="auto-schedule" 
+                        checked={autoSchedule}
+                        onCheckedChange={(checked) => handleScheduleToggle(!!checked)}
+                        className="h-4 w-4 rounded border-gray-600 bg-[#1a2235] text-cyber-blue focus:ring-cyber-blue"
+                      />
                       <label htmlFor="auto-schedule" className="ml-2 text-gray-400">Weekly auto-schedule</label>
                     </div>
-                    <Calendar size={16} className="text-gray-500" />
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="text-gray-500 hover:text-cyber-blue transition-colors"
+                      onClick={() => {
+                        setAutoSchedule(!autoSchedule);
+                        handleScheduleToggle(!autoSchedule);
+                      }}
+                    >
+                      <Calendar size={16} />
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -593,14 +815,6 @@ const Dashboard = () => {
                         }`}>
                           <AlertTriangle size={16} />
                         </div>
-                      </div>
-                      <div className="flex space-x-2 mt-3">
-                        <Button variant="outline" size="sm" className="h-8 text-xs border-blue-900/20">
-                          Dismiss
-                        </Button>
-                        <Button variant="outline" size="sm" className="h-8 text-xs border-blue-900/20 bg-blue-900/5">
-                          View Details
-                        </Button>
                       </div>
                     </div>
                   ))}
@@ -679,6 +893,33 @@ const Dashboard = () => {
             </div>
           </div>
         )}
+        
+        {/* Email Dialog */}
+        <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
+          <DialogContent className="bg-[#111827] border border-blue-900/30 text-white">
+            <DialogHeader>
+              <DialogTitle>Enter Email Address</DialogTitle>
+              <DialogDescription className="text-gray-400">
+                We'll send your generated reports to this email address.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <label htmlFor="email" className="text-sm text-gray-400 block mb-2">Email Address</label>
+              <Input 
+                id="email" 
+                type="email" 
+                placeholder="you@example.com" 
+                value={emailAddress} 
+                onChange={(e) => setEmailAddress(e.target.value)}
+                className="bg-[#1a2235] border-blue-900/20 focus:border-cyber-blue"
+              />
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setEmailDialogOpen(false)}>Cancel</Button>
+              <Button onClick={handleEmailSubmit}>Save</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </SidebarProvider>
   );
