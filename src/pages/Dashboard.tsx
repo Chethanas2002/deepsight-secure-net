@@ -154,16 +154,18 @@ const Dashboard = () => {
   
   // Pagination settings
   const itemsPerPage = 3;
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   
-  // Filter logs based on search
+  // Filter logs based on search term
   const filteredLogs = honeypotLogs.filter(log => 
     log.processType.toLowerCase().includes(searchTerm.toLowerCase())
   );
   
-  const currentLogs = filteredLogs.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredLogs.length / itemsPerPage);
+  
+  // Calculate current logs based on pagination
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentLogs = filteredLogs.slice(indexOfFirstItem, indexOfLastItem);
   
   // Open log details modal
   const openLogDetails = (log: any) => setSelectedLog(log);
@@ -186,6 +188,11 @@ const Dashboard = () => {
       setCurrentPage(currentPage - 1);
     }
   };
+
+  // Reset pagination when search term changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   // Parse CSV file
   const parseCSV = (text: string) => {
@@ -241,6 +248,8 @@ const Dashboard = () => {
               title: "CSV data imported",
               description: `Added ${parsedData.length} new logs from ${file.name}`,
             });
+            // Reset to first page to show the uploaded data
+            setCurrentPage(1);
           } else {
             toast({
               title: "No valid data found",
@@ -508,7 +517,7 @@ const Dashboard = () => {
                   <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
                 </Button>
                 
-                {/* Notifications panel - with removed buttons */}
+                {/* Notifications panel - without the buttons */}
                 {showNotifications && (
                   <div className="absolute right-0 mt-2 w-96 bg-[#111827] border border-blue-900/20 rounded-lg shadow-xl z-20 overflow-hidden neo-blur">
                     <div className="p-4 border-b border-blue-900/20">
@@ -959,7 +968,7 @@ const Dashboard = () => {
           </main>
         </div>
       
-        {/* Log details modal */}
+        {/* Log details modal - without the Flag as Suspicious and Export Log buttons */}
         {selectedLog && (
           <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
             <div className="bg-[#111827]/95 backdrop-blur-sm border border-blue-900/30 rounded-lg w-full max-w-2xl shadow-xl">
@@ -1014,15 +1023,6 @@ const Dashboard = () => {
                   <div className="text-xs font-mono text-gray-300 whitespace-pre-wrap">
                     {`Process: ${selectedLog.processType}\nStarted: ${selectedLog.timestamp}\nActivity log:\n1. ${selectedLog.behaviorSummary}\n2. Access to system directory detected\n3. Multiple file operations in quick succession\n${selectedLog.detected ? '4. Encryption patterns detected\n5. Ransom note creation attempt' : '4. Normal system operations\n5. No encryption patterns detected'}`}
                   </div>
-                </div>
-                
-                <div className="flex justify-end space-x-3">
-                  <Button variant="outline" className="border-red-500/30 text-red-400 hover:bg-red-500/10">
-                    <Flag size={16} className="mr-2" /> Flag as Suspicious
-                  </Button>
-                  <Button variant="outline" className="border-blue-900/20 hover:bg-blue-900/10">
-                    <Download size={16} className="mr-2" /> Export Log
-                  </Button>
                 </div>
               </div>
             </div>

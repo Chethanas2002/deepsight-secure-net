@@ -5,7 +5,7 @@ import { Switch } from '@/components/ui/switch';
 import { toast } from '@/components/ui/use-toast';
 import { 
   Bell, Shield, Moon, Sun, Cpu, RefreshCw, 
-  Clock, Upload, Download, Lock, ChevronDown,
+  Clock, Lock, ChevronDown,
   Server, Database
 } from 'lucide-react';
 
@@ -285,35 +285,6 @@ const Settings = ({ onClose }: { onClose: () => void }) => {
               <option value="60">60 days</option>
               <option value="90">90 days</option>
             </select>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-2 mt-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="border-blue-900/20 flex items-center"
-              onClick={() => {
-                toast({
-                  title: "Backup created",
-                  description: "Your data has been backed up successfully."
-                });
-              }}
-            >
-              <Upload size={16} className="mr-2" /> Create Backup
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="border-blue-900/20 flex items-center"
-              onClick={() => {
-                toast({
-                  title: "Restore complete",
-                  description: "Your data has been restored from the latest backup."
-                });
-              }}
-            >
-              <Download size={16} className="mr-2" /> Restore
-            </Button>
           </div>
         </div>
 
