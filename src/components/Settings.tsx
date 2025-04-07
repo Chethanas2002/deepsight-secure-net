@@ -9,6 +9,10 @@ import {
   Server, Database
 } from 'lucide-react';
 
+// Import honeypot logs JSON
+// import honeypotLogsData from '@/data/honeypotLogs.json';
+
+
 const Settings = ({ onClose }: { onClose: () => void }) => {
   const [darkMode, setDarkMode] = useState(true);
   const [notifications, setNotifications] = useState(true);
@@ -17,6 +21,14 @@ const Settings = ({ onClose }: { onClose: () => void }) => {
   const [language, setLanguage] = useState("english");
   const [dataRetention, setDataRetention] = useState("30");
   const [advancedSectionOpen, setAdvancedSectionOpen] = useState(false);
+
+// New state for honeypot logs
+  // const [honeypotLogs, setHoneypotLogs] = useState<any[]>([]);
+
+ // Load the honeypot logs on component mount
+  // useEffect(() => {
+  //   setHoneypotLogs(honeypotLogsData);
+  // }, []);
 
   const handleSave = () => {
     toast({
