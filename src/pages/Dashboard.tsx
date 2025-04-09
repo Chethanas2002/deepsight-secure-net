@@ -1,9 +1,9 @@
-
+ 
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ChevronLeft, ChevronRight, Bell, Settings, LogOut, User, Home, Monitor, 
-  Brain, AlertTriangle, FileText, Menu, Search, Filter, BarChart, 
+  Brain, AlertTriangle, FileText, Menu, Search, Filter,
   Calendar, Download, Mail, Upload, Clock, FileType, Info, Check, 
   AlertCircle, Cpu, MoreHorizontal, Trash, Flag, X, ChevronDown
 } from 'lucide-react';
@@ -46,16 +46,28 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import SettingsComponent from "@/components/Settings";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+
+const data = [
+  { date: 'Mar 1', threats: 2 },
+  { date: 'Mar 2', threats: 1 },
+  { date: 'Mar 3', threats: 4 },
+  { date: 'Mar 4', threats: 3 },
+  { date: 'Mar 5', threats: 5 },
+  { date: 'Mar 6', threats: 2 },
+  { date: 'Mar 7', threats: 7 },
+];
+
 
 // Dummy data for the dashboard
 const threatData = [
-  { date: '2023-03-01', count: 12 },
-  { date: '2023-03-02', count: 19 },
-  { date: '2023-03-03', count: 15 },
-  { date: '2023-03-04', count: 25 },
-  { date: '2023-03-05', count: 32 },
-  { date: '2023-03-06', count: 18 },
-  { date: '2023-03-07', count: 29 }
+  { date: '2025-03-01', count: 12 },
+  { date: '2025-03-02', count: 19 },
+  { date: '2025-03-03', count: 15 },
+  { date: '2025-03-04', count: 25 },
+  { date: '2025-03-05', count: 32 },
+  { date: '2025-03-06', count: 18 },
+  { date: '2025-03-07', count: 29 }
 ];
 
 // Initial honeypot logs data
@@ -63,7 +75,7 @@ const initialHoneypotLogs = [
   { 
     id: 1, 
     processType: 'cmd.exe', 
-    timestamp: '2023-03-07 14:32:45', 
+    timestamp: '2025-03-07 14:32:45', 
     detected: true, 
     severity: 'high',
     behaviorSummary: 'File encryption attempt detected on multiple directories' 
@@ -71,7 +83,7 @@ const initialHoneypotLogs = [
   { 
     id: 2, 
     processType: 'python.exe', 
-    timestamp: '2023-03-07 12:15:22', 
+    timestamp: '2025-03-07 12:15:22', 
     detected: false, 
     severity: 'low',
     behaviorSummary: 'Regular file system operations with no encryption patterns' 
@@ -79,7 +91,7 @@ const initialHoneypotLogs = [
   { 
     id: 3, 
     processType: 'powershell.exe', 
-    timestamp: '2023-03-07 10:45:11', 
+    timestamp: '2025-03-07 10:45:11', 
     detected: true, 
     severity: 'medium',
     behaviorSummary: 'Registry modifications and suspicious network connections' 
@@ -87,7 +99,7 @@ const initialHoneypotLogs = [
   { 
     id: 4, 
     processType: 'explorer.exe', 
-    timestamp: '2023-03-07 09:22:36', 
+    timestamp: '2025-03-07 09:22:36', 
     detected: false, 
     severity: 'low',
     behaviorSummary: 'Standard file browsing behavior with no malicious actions' 
@@ -95,7 +107,7 @@ const initialHoneypotLogs = [
   { 
     id: 5, 
     processType: 'unknown', 
-    timestamp: '2023-03-06 23:41:17', 
+    timestamp: '2025-03-06 23:41:17', 
     detected: true, 
     severity: 'high',
     behaviorSummary: 'Shadow copy deletion and ransomware note creation' 
@@ -103,31 +115,31 @@ const initialHoneypotLogs = [
 ];
 
 const aiPredictions = [
-  { id: 1, prediction: 'Ransomware', confidence: 97, timestamp: '2023-03-07 14:35:12' },
-  { id: 2, prediction: 'Safe', confidence: 99, timestamp: '2023-03-07 12:18:45' },
-  { id: 3, prediction: 'Ransomware', confidence: 86, timestamp: '2023-03-07 10:48:33' },
-  { id: 4, prediction: 'Safe', confidence: 95, timestamp: '2023-03-07 09:25:51' }
+  { id: 1, prediction: 'Ransomware', confidence: 97, timestamp: '2025-03-07 14:35:12' },
+  { id: 2, prediction: 'Safe', confidence: 99, timestamp: '2025-03-07 12:18:45' },
+  { id: 3, prediction: 'Ransomware', confidence: 86, timestamp: '2025-03-07 10:48:33' },
+  { id: 4, prediction: 'Safe', confidence: 95, timestamp: '2025-03-07 09:25:51' }
 ];
 
 const alerts = [
   { 
     id: 1, 
     title: 'Suspicious Activity Detected', 
-    timestamp: '2023-03-07 14:32:45', 
+    timestamp: '2025-03-07 14:32:45', 
     severity: 'high',
     description: 'Multiple file encryption attempts detected from process cmd.exe'
   },
   { 
     id: 2, 
     title: 'Unusual Network Traffic', 
-    timestamp: '2023-03-07 10:45:11', 
+    timestamp: '2025-03-07 10:45:11', 
     severity: 'medium',
     description: 'Powershell process attempting to connect to known malicious IP'
   },
   { 
     id: 3, 
     title: 'System File Modification', 
-    timestamp: '2023-03-06 23:41:17', 
+    timestamp: '2025-03-06 23:41:17', 
     severity: 'high',
     description: 'Critical system files being modified by unknown process'
   }
@@ -581,21 +593,26 @@ const Dashboard = () => {
                       <Badge variant="outline" className="bg-red-500/10 text-red-400 border-red-500/30">High</Badge>
                     </div>
                   </div>
-                  <div className="h-64 w-full bg-[#1a2235] rounded-lg flex items-center justify-center border border-blue-900/20">
-                    <div className="text-center px-4">
-                      <BarChart className="h-10 w-10 text-cyber-blue mx-auto mb-3 opacity-80" />
-                      <p className="text-gray-400">Chart visualization would go here</p>
-                      <p className="text-xs text-gray-500 mt-2">Showing threat levels for the past 7 days</p>
-                    </div>
+                  <div className="h-64 w-full bg-[#1a2235] rounded-lg border border-blue-900/20 p-4">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={data}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#2c3551" />
+                        <XAxis dataKey="date" stroke="#94a3b8" />
+                        <YAxis stroke="#94a3b8" />
+                        <Tooltip contentStyle={{ backgroundColor: '#1f2937', borderColor: '#334155' }} />
+                        <Bar dataKey="threats" fill="#60a5fa" />
+                      </BarChart>
+                    </ResponsiveContainer>
                   </div>
+
                   <div className="mt-4 flex justify-between text-xs text-gray-500">
-                    <span>Mar 1</span>
+                    {/* <span>Mar 1</span>
                     <span>Mar 2</span>
                     <span>Mar 3</span>
                     <span>Mar 4</span>
                     <span>Mar 5</span>
                     <span>Mar 6</span>
-                    <span>Mar 7</span>
+                    <span>Mar 7</span> */}
                   </div>
                 </div>
                 
